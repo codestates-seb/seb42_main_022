@@ -19,7 +19,7 @@ function App() {
           <Route path='/review' element={<Review/>}/>
           <Route path='/greenact' element={<GreenAct/>}/>
           <Route path='/news' element={<News/>}/>
-          <Route path='/calculator' element={<GreenCal/>}/>
+          <Route path='/greencal' element={<GreenCal/>}/>
           <Route path='/ranking' element={<Ranking/>}/>
         </Routes>
       </header>
