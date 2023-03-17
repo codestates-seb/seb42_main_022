@@ -61,7 +61,7 @@ const Header = () => {
       <EmptySpace />
       <ProfileWrapper>
         <ProfileLink to="./community">
-          <ProfileIcon />
+          <ProfileIcon width="32" height="32" />
         </ProfileLink>
       </ProfileWrapper>
     </HeaderContainer>
