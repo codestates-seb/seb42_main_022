@@ -1,9 +1,14 @@
-import React from 'react';
+import React from "react";
+import { Reset } from "styled-reset";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
 
 const Main = () => {
   return (
     <>
-    <div>여긴 메인페이지입니다.</div>
+      <Reset />
+      <Header />
+      <Footer />
     </>
   );
 };
