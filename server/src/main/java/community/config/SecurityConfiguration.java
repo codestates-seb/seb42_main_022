@@ -8,6 +8,7 @@ import community.auth.jwt.JwtTokenizer;
 import community.auth.oauth2.CustomOauth2UserService;
 import community.auth.oauth2.Oauth2MemberSuccessHandler;
 import community.auth.refreshtoken.RefreshTokenRepository;
+
 import community.auth.utils.CustomAuthorityUtils;
 import community.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,9 @@ public class SecurityConfiguration {
     private final JwtTokenizer jwtTokenizer;
     private final CustomAuthorityUtils authorityUtils;
     private final RedisTemplate<String, String> redisTemplate;
+    private final CustomOauth2UserService customOauth2UserService;
+    private final Oauth2MemberSuccessHandler oauth2MemberSuccessHandler;
+    private final MemberRepository memberRepository;
 
     private final CustomOauth2UserService customOauth2UserService;
     private final Oauth2MemberSuccessHandler oauth2MemberSuccessHandler;
@@ -95,6 +99,8 @@ public class SecurityConfiguration {
         httpSecurity
                 .oauth2Login()
                 .successHandler(new Oauth2MemberSuccessHandler(jwtTokenizer, authorityUtils, memberRepository,refreshTokenRepository));//oauth2 인증 성공 후처리 handler 호출
+                .successHandler(new Oauth2MemberSuccessHandler(jwtTokenizer, authorityUtils, memberRepository));//oauth2 인증 성공 후처리 handler 호출
+
         return httpSecurity.build();
     }
 

@@ -47,14 +47,8 @@ public class OauthAttributes {
         member.setName(name);
         member.setPassword(getPasswordEncoder().encode("oauth2member"));
         return member;
-        /*
-        return Member.builder()
-                .email(email)
-                .nickName(name)
-                .pw(getPasswordEncoder().encode("oauth2Member!"))
-                .build();
 
-         */
     }
+
 }
 
