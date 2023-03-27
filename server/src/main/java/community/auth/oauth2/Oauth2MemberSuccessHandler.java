@@ -1,9 +1,6 @@
 package community.auth.oauth2;
 
 import community.auth.jwt.JwtTokenizer;
-import community.auth.refreshtoken.RefreshToken;
-import community.auth.refreshtoken.RefreshTokenRepository;
-
 import community.auth.utils.CustomAuthorityUtils;
 import community.auth.utils.ErrorResponder;
 import community.exception.BusinessLogicException;
@@ -34,20 +31,6 @@ public class Oauth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
     private final CustomAuthorityUtils customAuthorityUtils;
     private final MemberRepository memberRepository;
 
-
-    private final RefreshTokenRepository refreshTokenRepository;
-
-    public Oauth2MemberSuccessHandler(JwtTokenizer jwtTokenizer,
-                                      CustomAuthorityUtils customAuthorityUtils,
-                                      MemberRepository memberRepository,
-                                      RefreshTokenRepository refreshTokenRepository){
-        this.jwtTokenizer = jwtTokenizer;
-        this.customAuthorityUtils = customAuthorityUtils;
-        this.memberRepository = memberRepository;
-        this.refreshTokenRepository=refreshTokenRepository;
-    }
-
-
     public Oauth2MemberSuccessHandler(JwtTokenizer jwtTokenizer,
                                       CustomAuthorityUtils customAuthorityUtils,
                                       MemberRepository memberRepository){
@@ -55,7 +38,6 @@ public class Oauth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
         this.customAuthorityUtils = customAuthorityUtils;
         this.memberRepository = memberRepository;
     }
-
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
@@ -76,11 +58,6 @@ public class Oauth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
             String refreshToken = delegateRefreshToken(findMember);
 
 
-            RefreshToken savedRefreshToken = new RefreshToken();
-            savedRefreshToken.setRefreshToken(refreshToken);
-            refreshTokenRepository.save(savedRefreshToken);
-
-
             response.setHeader("Authorization", "Bearer " + accessToken);
             response.setHeader("RefreshToken", refreshToken);
 
@@ -95,7 +72,6 @@ public class Oauth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
         }
 
     }
-
     public String delegateAccessToken(Member member) {
         Map<String, Object> claims = new HashMap<>();
         //Payload에 username, roles 구성
@@ -141,7 +117,4 @@ public class Oauth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
                 .build()
                 .toUri();
     }
-
 }
-
-

@@ -3,8 +3,6 @@ package community.auth.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import community.auth.dto.AuthDto;
 import community.auth.jwt.JwtTokenizer;
-import community.auth.refreshtoken.RefreshToken;
-import community.auth.refreshtoken.RefreshTokenRepository;
 import community.member.entity.Member;
 import lombok.SneakyThrows;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -27,18 +25,15 @@ import java.util.concurrent.TimeUnit;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenizer jwtTokenizer;
-    private final RedisTemplate<String, String> redisTemplate;
 
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
                                    JwtTokenizer jwtTokenizer,
-                                   RedisTemplate<String, String> redisTemplate,
-                                   RefreshTokenRepository refreshTokenRepository) {
+                                   RedisTemplate<String, String> redisTemplate) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenizer = jwtTokenizer;
         this.redisTemplate = redisTemplate;
-        this.refreshTokenRepository=refreshTokenRepository;
     }
 
     @SneakyThrows
@@ -64,10 +59,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         String accessToken = delegateAccessToken(member);
         String refreshToken = delegateRefreshToken(member);
-
-        RefreshToken savedRefreshToken = new RefreshToken();
-        savedRefreshToken.setRefreshToken(refreshToken);
-        refreshTokenRepository.save(savedRefreshToken);
 
         redisTemplate.opsForValue().set(
                 member.getEmail(),

@@ -42,7 +42,7 @@ public class Member{
     private String phone;
 
     @Column
-    private String password;
+    String password;
 //    private String likeStatus; // 좋아요 눌렀는지 여부
 
     @Column(nullable = false)

@@ -7,8 +7,6 @@ import community.auth.handler.*;
 import community.auth.jwt.JwtTokenizer;
 import community.auth.oauth2.CustomOauth2UserService;
 import community.auth.oauth2.Oauth2MemberSuccessHandler;
-import community.auth.refreshtoken.RefreshTokenRepository;
-
 import community.auth.utils.CustomAuthorityUtils;
 import community.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,12 +43,6 @@ public class SecurityConfiguration {
     private final Oauth2MemberSuccessHandler oauth2MemberSuccessHandler;
     private final MemberRepository memberRepository;
 
-    private final CustomOauth2UserService customOauth2UserService;
-    private final Oauth2MemberSuccessHandler oauth2MemberSuccessHandler;
-    private final MemberRepository memberRepository;
-
-    private final RefreshTokenRepository refreshTokenRepository;
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity
@@ -75,7 +67,7 @@ public class SecurityConfiguration {
                                         //회원가입
                                         .antMatchers(HttpMethod.POST, "/members").permitAll()
                                         //회원조회,수정,삭제
-                                        .antMatchers("/members/{member-id:[\\d]+}/**").permitAll()
+                                        .antMatchers("/members/{member-id:[\\d]+}/**").hasRole("USER")
                                         //질문조회
                                         .antMatchers(HttpMethod.GET, "/boards/*").permitAll()
                                         //질문등록
@@ -98,9 +90,7 @@ public class SecurityConfiguration {
                 .userService(customOauth2UserService); //로그인 성공 후 oauth2userservice 호출
         httpSecurity
                 .oauth2Login()
-                .successHandler(new Oauth2MemberSuccessHandler(jwtTokenizer, authorityUtils, memberRepository,refreshTokenRepository));//oauth2 인증 성공 후처리 handler 호출
                 .successHandler(new Oauth2MemberSuccessHandler(jwtTokenizer, authorityUtils, memberRepository));//oauth2 인증 성공 후처리 handler 호출
-
         return httpSecurity.build();
     }
 
@@ -131,7 +121,7 @@ public class SecurityConfiguration {
             AuthenticationManager authenticationManager=builder.getSharedObject(AuthenticationManager.class);
 
             JwtAuthenticationFilter jwtAuthenticationFilter=
-                    new JwtAuthenticationFilter(authenticationManager, jwtTokenizer, redisTemplate,refreshTokenRepository);
+                    new JwtAuthenticationFilter(authenticationManager, jwtTokenizer, redisTemplate);
 
             jwtAuthenticationFilter.setFilterProcessesUrl("/members/login");
             jwtAuthenticationFilter.setAuthenticationSuccessHandler(new MemberAuthenticationSuccessHandler());
