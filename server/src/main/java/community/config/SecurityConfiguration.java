@@ -5,7 +5,10 @@ import community.auth.filter.JwtLogoutFilter;
 import community.auth.filter.JwtVerificationFilter;
 import community.auth.handler.*;
 import community.auth.jwt.JwtTokenizer;
+import community.auth.oauth2.CustomOauth2UserService;
+import community.auth.oauth2.Oauth2MemberSuccessHandler;
 import community.auth.utils.CustomAuthorityUtils;
+import community.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +40,10 @@ public class SecurityConfiguration {
     private final CustomAuthorityUtils authorityUtils;
     private final RedisTemplate<String, String> redisTemplate;
 
+    private final CustomOauth2UserService customOauth2UserService;
+    private final Oauth2MemberSuccessHandler oauth2MemberSuccessHandler;
+    private final MemberRepository memberRepository;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity
@@ -61,7 +68,7 @@ public class SecurityConfiguration {
                                         //회원가입
                                         .antMatchers(HttpMethod.POST, "/members").permitAll()
                                         //회원조회,수정,삭제
-                                        .antMatchers("/members/{member-id:[\\d]+}/**").hasRole("USER")
+                                        .antMatchers("/members/{member-id:[\\d]+}/**").permitAll()
                                         //질문조회
                                         .antMatchers(HttpMethod.GET, "/boards/*").permitAll()
                                         //질문등록
@@ -78,8 +85,13 @@ public class SecurityConfiguration {
                                         .antMatchers(HttpMethod.POST, "comments").hasRole("USER")
                                         //답변 추천 비추천 수정 삭제
                                         .antMatchers("/comments/{comment-id:[\\d]+}/*").hasRole("USER")
-                                        .anyRequest().permitAll()
-                );
+                                        .anyRequest().permitAll())
+                .oauth2Login()//OAuth2 로그인 시작
+                .userInfoEndpoint()//로그인 성공시 사용자 정보를 가져옴
+                .userService(customOauth2UserService); //로그인 성공 후 oauth2userservice 호출
+        httpSecurity
+                .oauth2Login()
+                .successHandler(new Oauth2MemberSuccessHandler(jwtTokenizer, authorityUtils, memberRepository));//oauth2 인증 성공 후처리 handler 호출
         return httpSecurity.build();
     }
 

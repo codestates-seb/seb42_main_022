@@ -42,8 +42,11 @@ public class Member{
     private String phone;
 
     @Column
-    String password;
+    private String password;
 //    private String likeStatus; // 좋아요 눌렀는지 여부
+
+    @Column(nullable = false)
+    boolean google;
 
     @Column(columnDefinition = "integer default 0", nullable = false)
     private int point;
