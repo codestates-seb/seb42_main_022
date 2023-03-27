@@ -14,6 +14,10 @@ public enum ExceptionCode {
     NOT_AUTHORIZED(404, "not authorized, 인증받지 않은 접근입니다"),
     PASSWORD_NOT_CONFIRMED(404, "암호가 확인되지 않습니다."),
 
+    NOT_LOGIN(402,"login, please"),
+    REFRESH_TOKEN_NOT_FOUND(424, "RefreshToken not found"),
+    NOT_VALIDATE(423, "Not validate token"),
+
     MEMBER_EXISTS(409, "고객 정보가 이미 존재합니다."),
     BOARD_EXISTS(409, "게시판 정보가 이미 존재합니다."),
     COMMENT_EXISTS(409,"댓글이 이미 존재합니다."),

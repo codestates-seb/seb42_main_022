@@ -15,3 +15,5 @@ public class SessionMemberDto implements Serializable { //세션을 직렬화 �
         this.name = member.getName();
     }
 }
+
+
