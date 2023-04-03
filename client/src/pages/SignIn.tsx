@@ -135,6 +135,7 @@ const SignIn = () => {
                     localStorage.setItem("name", res.data.name);
                     localStorage.setItem("level", res.data.level);
                     localStorage.setItem("point", res.data.point);
+                    window.location.reload();
                     navigate("../");
                   })
                   .catch((error) => {
