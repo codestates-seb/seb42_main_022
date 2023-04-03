@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
-import { defaultInstance } from "../utils/api";
+import axios from "axios";
 
 interface BoardData {
   title: string;
@@ -17,6 +17,7 @@ interface BoardData {
     };
     member_id: number;
     member_status: string;
+    profile_url: string;
   };
   creator_level: number;
   upload_dto: {
@@ -34,13 +35,13 @@ interface BoardData {
 
 export const useOnePost = () => {
   const { id } = useParams();
-  const url = `/boards/${id}`;
+  const url = `http://3.39.150.26:8080/boards/${id}`;
   const fetchPost = async () => {
-    const response = await defaultInstance.get<BoardData>(url);
+    const response = await axios.get<BoardData>(url);
     return response.data;
   };
 
   return useQuery<BoardData, Error>("post", fetchPost, {
-    refetchOnWindowFocus: true, // Add this option to refetch data on window focus
+    refetchOnWindowFocus: false,
   });
 };

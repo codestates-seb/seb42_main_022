@@ -24,5 +24,7 @@ export const useFeatList = () => {
     return response.data;
   };
 
-  return useQuery<FeatPost[], Error>("featpost", fetchPost);
+  return useQuery<FeatPost[], Error>("featpost", fetchPost, {
+    refetchOnWindowFocus: false,
+  });
 };

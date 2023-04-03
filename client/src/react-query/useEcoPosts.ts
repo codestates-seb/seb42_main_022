@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useQuery } from 'react-query';
+import { useQuery } from "react-query";
 
 interface postList {
   board_creator: string;
@@ -9,13 +9,18 @@ interface postList {
   contents: string;
   board_id: number;
   created_at: string;
+  member: {
+    profile_url: string;
+  };
 }
 
 export const useEcoPosts = () => {
   const fetchPosts = async () => {
-    const response = await axios.get<postList[]>('http://3.39.150.26:8080/boards/eco?searchType=CONTENTS&searchValue=&page=&size=');
+    const response = await axios.get<postList[]>(
+      "http://3.39.150.26:8080/boards/eco?searchType=CONTENTS&searchValue=&page=&size=",
+    );
     return response.data;
   };
 
-  return useQuery<postList[], Error>('posts', fetchPosts);
+  return useQuery<postList[], Error>("posts", fetchPosts);
 };

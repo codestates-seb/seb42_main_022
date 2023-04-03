@@ -37,6 +37,11 @@ const CalculatorBtn = styled.button`
   border-radius: 5px;
   border: 0px;
   padding: 30px 10px 30px 10px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  &:hover{  
+    background-color: #4F8255;
+  }
 `;
 
 function GreenCal() {

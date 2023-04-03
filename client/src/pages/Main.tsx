@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import Footer from "../components/Footer";
 import Carousel from "../components/Carousel";
 import ShortcutCard from "../components/ShortcutCard";
+import { useRecoilState } from "recoil";
+import { mydataState } from "../App";
+import { authInstance } from "../utils/api";
 
 const Container = styled.div`
   display: flex;
@@ -24,8 +27,21 @@ const MiddleText = styled.div`
   margin: 0px 0px 20px 0px;
 `;
 
-
 const Main = () => {
+  const [data, setData] = useRecoilState(mydataState);
+
+  async function getUserinfo() {
+    const id = localStorage.memberid;
+    const url = `/members/${id}`;
+    const res = await authInstance.get(url);
+    setData(res.data);
+  }
+
+  useEffect(() => {
+    getUserinfo();
+    console.log(data);
+  }, []);
+
   return (
     <Container>
       {/* <Header /> */}

@@ -3,13 +3,46 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { useMemberInfo } from "../react-query/useMemberInfo";
 import { useMyPost } from "../react-query/useMyPost";
+import { useRecoilValue } from "recoil";
+import { memberInfoAtom } from "../recoil/state";
 import Deleteaccount from "../components/Deleteaccount";
 import { ReactComponent as SproutIcon } from "../icon/sprout.svg";
 import { ReactComponent as LikeIcon } from "../icon/thumbup.svg";
-import accountCircle from "../icon/account_circle.svg";
+import { defaultInstance, authInstance } from "../utils/api";
+import axios from "axios";
 
 interface LevelProp {
   exp: number;
+}
+
+interface memberData {
+  email: string;
+  name: string;
+  phone: string;
+  point: string;
+  tree_count: string;
+  level_dto: {
+    user_name: string;
+    level: number;
+    level_exp: number;
+    total_exp: number;
+  };
+  member_id: number;
+  member_status: string;
+  profile_url: string;
+}
+
+interface MyPost {
+  title: string;
+  contents: string;
+  board_creator: string;
+  creator_level: string;
+  delegate_image_path: string;
+  board_id: number;
+  like_count: number;
+  view_count: number;
+  created_at: string;
+  modified_at: string;
 }
 
 const Container = styled.div`
@@ -51,6 +84,13 @@ const User_box1 = styled.div`
 const User_ImgBox = styled.div`
   width: 84px;
   height: 100%;
+  border-radius: 50%;
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 `;
 const User_ButtonBox = styled.div`
   display: flex;
@@ -144,7 +184,7 @@ const CurExp = styled.div<LevelProp>`
   animation-duration: 1s;
   animation-direction: alternate;
   animation-iteration-count: 1;
-  animation-timing-function: linear;
+  animation-timing-function: ease;
   box-shadow: 0 0 4px rgb(96, 153, 102);
   @keyframes my-animation {
     from {
@@ -267,31 +307,56 @@ const Post_Right = styled.div`
 
 function MyPage() {
   const token = localStorage.token;
+  const [memberInfo, setMemberInfo] = useState<memberData | null>(null);
+  const [memberPost, setMemberPost] = useState<MyPost[] | null>(null);
+  // const {
+  //   data: member,
+  //   isLoading: memberLoading,
+  //   isError: memberError,
+  // } = useMemberInfo();
+  // const {
+  //   data: posts,
+  //   isLoading: postsLoading,
+  //   isError: postsError,
+  // } = useMyPost();
 
-  const {
-    data: member,
-    isLoading: memberLoading,
-    isError: memberError,
-  } = useMemberInfo();
-  const {
-    data: posts,
-    isLoading: postsLoading,
-    isError: postsError,
-  } = useMyPost();
   const [ismodalopen, setIsmodalopen] = useState(false);
+
+  function handleModalOpen() {
+    setIsmodalopen(!ismodalopen);
+  }
+
+  useEffect(() => {
+    const id = localStorage.memberid;
+    const url = `http://3.39.150.26:8080/members/${id}`;
+    const url2 = `http://3.39.150.26:8080/boards/myBoards/${id}`;
+    const header = {
+      Authorization: token,
+    };
+    const fetchData = async () => {
+      try {
+        const [myData, myPost] = await Promise.all([
+          axios.get(url, { headers: header }),
+          axios.get(url2, { headers: header }),
+        ]);
+
+        setMemberInfo(myData.data);
+        setMemberPost(myPost.data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   if (!token) {
     return <div>로그인 해주세요</div>;
   }
-  function handleModalOpen() {
-    setIsmodalopen(!ismodalopen);
-  }
-  console.log(posts);
+
   return (
     <Container>
-      {memberLoading ? (
-        "회원정보를 불러오고 있습니다..."
-      ) : member ? (
+      {memberInfo ? (
         <>
           {ismodalopen && (
             <Deleteaccount
@@ -306,7 +371,7 @@ function MyPage() {
                 <User_box1>
                   <User_ImgBox>
                     <img
-                      src={accountCircle}
+                      src={memberInfo.profile_url}
                       style={{ width: "84px", height: "84px" }}
                     />
                   </User_ImgBox>
@@ -319,18 +384,18 @@ function MyPage() {
                   </User_ButtonBox>
                 </User_box1>
                 <User_box2>
-                  <User_name>{member.name}</User_name>
-                  <User_mileage>마일리지 {member.point}</User_mileage>
+                  <User_name>{memberInfo.name}</User_name>
+                  <User_mileage>마일리지 {memberInfo.point}</User_mileage>
                 </User_box2>
               </User_Top>
               <User_Bottom>
                 <User_box3>
                   <User_level>
-                    <span>Lv.{member.level_dto.level}</span>
+                    <span>Lv.{memberInfo.level_dto.level}</span>
                   </User_level>
                   <User_levelbar>
                     <TotalExp>
-                      <CurExp exp={member.level_dto.level_exp}></CurExp>
+                      <CurExp exp={memberInfo.level_dto.level_exp}></CurExp>
                     </TotalExp>
                   </User_levelbar>
                 </User_box3>
@@ -343,8 +408,8 @@ function MyPage() {
           </White_Container>
           <Gray_Container>
             <Post_Container>
-              {posts && posts.length > 0 ? (
-                posts.map((el, idx: number) => {
+              {memberPost && memberPost.length > 0 ? (
+                memberPost.map((el, idx: number) => {
                   return (
                     <Post_wrapper key={idx} to={`../community/${el.board_id}`}>
                       <Postbox>
@@ -382,7 +447,7 @@ function MyPage() {
           </Gray_Container>
         </>
       ) : (
-        "loading..."
+        "Loading..."
       )}
     </Container>
   );

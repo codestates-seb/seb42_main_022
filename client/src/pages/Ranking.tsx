@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import treeIcon from "../image/treeIcon.png";
 import { useRanking } from "../react-query/useRanking"
+import ScrollToTop from '../components/ScrollToTop';
 
 const MainContainer = styled.div`
   display: flex;
@@ -53,8 +54,8 @@ const RankIndex = styled.div`
   }
 `;
 const RankName = styled.div`
-  font-size: 30px;
-  /* width: 140px; */
+  font-size: 25px;
+  width: 180px;
   font-weight: bold;
   /* margin: 0px 80px 0px 50px; */
   @media screen and (max-width: 920px) {
@@ -124,6 +125,7 @@ function Ranking() {
           </RankContainer>
         </SectionContainer>
       </MainContainer>
+      <ScrollToTop />
     </>
   );
 }

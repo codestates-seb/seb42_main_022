@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import GreenActImg from "../image/GreenAct.jpg";
-import ReviewImg from "../image/Review.jpeg";
-import GreenCalImg from "../image/GreenCal.jpg";
-import NewsImg from "../image/News.jpg";
-import Free from "../image/free.jpg";
+import greenactimg from "../image/GreenAct.jpg";
+import reviewimg from "../image/Review.jpeg";
+import greencalimg from "../image/GreenCal.jpg";
+import newsimg from "../image/News.jpg";
+import freeimg from "../image/free.jpg";
 
 const Container = styled.div`
   width: 80%;
@@ -29,6 +29,7 @@ const StraightText = styled.div`
   height: 50%;
   width: 100%;
 `;
+
 const Square = styled(Link)<SquareProps>`
   display: flex;
   justify-content: center;
@@ -37,15 +38,15 @@ const Square = styled(Link)<SquareProps>`
   text-decoration: none;
   background: ${(props) =>
     props.greenact
-      ? `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${GreenActImg})`
+      ? `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${greenactimg})`
       : props.review
-      ? `linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.25)), url(${ReviewImg})`
+      ? `linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.25)), url(${reviewimg})`
       : props.greencal
-      ? `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${GreenCalImg})`
+      ? `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${greencalimg})`
       : props.news
-      ? `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${NewsImg})`
+      ? `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${newsimg})`
       : props.free
-      ? `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${Free})`
+      ? `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${freeimg})`
       : ""};
   background-size: cover;
   background-position: center;
@@ -55,15 +56,15 @@ const Square = styled(Link)<SquareProps>`
     width: 32%;
     background: ${(props) =>
       props.greenact
-        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${GreenActImg})`
+        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${greenactimg})`
         : props.review
-        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${ReviewImg})`
+        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${reviewimg})`
         : props.greencal
-        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${GreenCalImg})`
+        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${greencalimg})`
         : props.news
-        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${NewsImg})`
+        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${newsimg})`
         : props.free
-        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${Free})`
+        ? `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)), url(${freeimg})`
         : ""};
     background-size: cover;
     background-position: center;

@@ -53,11 +53,9 @@ const TitleContainer = styled.div`
 const CloseButton = styled.img`
     display: flex;
     justify-content: center;
-    
     position: relative;
     width: 40px;
     height: 40px;
-
     cursor: pointer;
 `;
 const CalculatorBtn = styled(Link)`
@@ -76,6 +74,11 @@ const CalculatorBtn = styled(Link)`
     font-size: 20px;
     font-weight: 600;
     text-decoration-line: none;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    &:hover{  
+        background-color: #4F8255;
+    }
 `;
 const InputContainer = styled.div`
     display: flex;

@@ -7,10 +7,10 @@ import GreenAct from "./pages/GreenAct";
 import News from "./pages/News";
 import GreenCal from "./pages/GreenCal";
 import Ranking from "./pages/Ranking";
-import { RecoilRoot, useRecoilValue } from "recoil";
+import { RecoilRoot, useRecoilValue, useRecoilState, atom } from "recoil";
 import Post from "./pages/Post";
 import MyPage from "./pages/MyPage";
-import MypageEdit from "./pages/MypageEdit";
+import Edit from "./pages/Edit";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import { Reset } from "styled-reset";
@@ -20,9 +20,19 @@ import GreenCalResult from "./pages/GreenCalResult";
 import Protected from "./components/privateRoute";
 import { sessionState } from "./recoil/state";
 import useCheckAuth from "./utils/useCheckAuth";
+import { recoilPersist } from "recoil-persist";
+
+const { persistAtom } = recoilPersist();
+
+export const mydataState = atom({
+  key: "memberdata",
+  default: 0,
+  effects_UNSTABLE: [persistAtom],
+});
 
 function App() {
   // const { authenticated } = useRecoilValue(sessionState);
+  const [data, setData] = useRecoilState(mydataState);
   const token = localStorage.token;
   console.log(token);
   useCheckAuth();
@@ -46,7 +56,7 @@ function App() {
           />
           <Route
             path="/mypageedit"
-            element={<Protected auth={token}>{<MypageEdit />}</Protected>}
+            element={<Protected auth={token}>{<Edit />}</Protected>}
           />
           <Route
             path="/signup"

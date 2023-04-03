@@ -51,8 +51,10 @@ const FormWrapper = styled.div`
   height: 75%;
 `;
 const RadiusInput = styled.input`
-  border-radius: 12px;
+  border-radius: 15px;
+  margin-top: 5px;
   padding: 6px;
+  border: 1.5px solid black;
 `;
 const ErrorMsg = styled.div`
   color: red;
@@ -65,7 +67,7 @@ const SignUpBtn = styled.button`
   color: white;
   font-size: 16px;
   background: #609966;
-  border-radius: 12px;
+  border-radius: 15px;
   padding: 8px;
   border: none;
   cursor: pointer;

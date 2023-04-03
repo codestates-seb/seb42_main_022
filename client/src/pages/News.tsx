@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from "styled-components";
 import { useNews } from "../react-query/useNews"
+import ScrollToTop from '../components/ScrollToTop';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko'
 
@@ -45,13 +46,17 @@ const NewsBox = styled.div`
   padding: 20px 50px 20px 50px;
   margin: 0px 0px 30px 0px;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  text-decoration-line: none;
+  /* text-decoration-line: none; */
+  cursor: pointer;
+  &:hover{  
+    text-decoration-line: underline;
+  }
 `;
 const Title = styled.div`
   font-size: 20px;
   font-weight: bold;
   text-align: center;
-  margin: 0px 0px 20px 0px;
+  margin: 0px 0px 10px 0px;
   color: black;
 `;
 const Text = styled.div`
@@ -65,6 +70,13 @@ const Contents = styled.div`
   /* font-weight: bold; */
   text-align: center;
   margin: 0px 0px 10px 0px;
+  color: black;
+`;
+const Time = styled.div`
+  width: 100%;
+  margin: 0px 0px 10px 0px;
+  text-align: end;
+  font-size: 13px;
   color: #757575;
 `;
 
@@ -84,14 +96,15 @@ function News () {
               return (
                 <NewsBox key={index} onClick={() => window.open(`${el.originallink}`, "_blank")}>
                   <Title>{el.title.replace(/<\/?(b|[^>]+|("|'))>|(&apos;)|(&quot;)/g, "")}</Title>
+                  <Time>{dayjs(el.pub_date).locale('ko').format('YYYY년 M월 D일 ddd HH:mm')}</Time>
                   <Contents>{el.description.replace(/<\/?(b|[^>]+|("|'))>|(&apos;)|(&quot;)/g, "")}</Contents>
-                  <div>{dayjs(el.pub_date).locale('ko').format('YYYY년 M월 D일 ddd HH:mm')}</div>
                 </NewsBox>
               )
             })}
           </NewsContainer>
         </SectionContainer>
       </MainContainer>
+      <ScrollToTop />
     </>
   );
 }

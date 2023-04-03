@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
 import { object, string, ref } from "yup";
+import { authInstance } from "../utils/api";
+import styled from "styled-components";
+import { useRecoilState } from "recoil";
+import { mydataState } from "../App";
 import { Formik } from "formik";
-import axios from "axios";
-import accountCircle from "../icon/account_circle.svg";
+import { useMemberInfo } from "../react-query/useMemberInfo";
+import addcircle from "../icon/add_circle.svg";
 
 type MypageState = {
   name: string;
@@ -43,8 +46,6 @@ const editSchema = object({
 
 const Container = styled.div`
   display: flex;
-  /* width: 100vh;
-  height: 100vh; */
   flex-direction: column;
   align-items: center;
   form {
@@ -54,7 +55,7 @@ const Container = styled.div`
 
 const ErrorMsg = styled.div`
   color: red;
-  font-size: 12px;
+  font-size: 0.75rem;
   padding: 2px;
   margin-top: 2px;
 `;
@@ -113,7 +114,7 @@ const Head_Left = styled.div`
   align-items: center;
   height: 90%;
   margin: auto 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   p {
     margin-left: 10px;
     color: red;
@@ -125,7 +126,7 @@ const Head_Right = styled.div`
   height: 90%;
   margin: auto 0;
   color: #808080;
-  font-size: 13px;
+  font-size: 0.813rem;
 `;
 
 const Input_Component = styled.div`
@@ -152,7 +153,42 @@ const ProfileBox = styled.div`
   width: 100%;
   height: 130px;
 `;
-
+const ProfileIMG = styled.div<{ src?: string }>`
+  position: relative;
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: ${(props) => (!props.src ? "1px solid black" : "none")};
+  }
+`;
+const UploadBox = styled.div`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  padding: 10px;
+  background: url(${addcircle});
+  background-color: white;
+  background-size: cover;
+  color: #000;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 999;
+`;
+const ShowButton = styled.div``;
+const AddProfilebutton = styled.input`
+  width: 30px;
+  height: 15px;
+  cursor: pointer;
+  opacity: 0;
+`;
 const TopItemBox = styled.div`
   display: flex;
   flex-direction: column;
@@ -171,10 +207,17 @@ function MypageEdit() {
     password: "",
     phone: "",
   });
-  console.log(userdata);
+  const {
+    data: member,
+    isLoading: memberLoading,
+    isError: memberError,
+  } = useMemberInfo();
+  const [mydata, setMyData] = useRecoilState(mydataState);
   const token = localStorage.token;
   const memberid = localStorage.memberid;
   const navigate = useNavigate();
+  // const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const maxLength = 20;
@@ -226,6 +269,36 @@ function MypageEdit() {
       }));
     }
   };
+  // 이미지 추가시
+  async function handleAddProfile(e: React.ChangeEvent<HTMLInputElement>) {
+    const selectedfile = e.target.files?.[0];
+    if (selectedfile) {
+      const url = URL.createObjectURL(selectedfile);
+      setPreviewUrl(url);
+      await handlePostProfile(selectedfile, url);
+    }
+  }
+
+  // 이미지 추가 요청
+  async function handlePostProfile(file: File, previewUrl: string) {
+    if (!file) {
+      return;
+    }
+    const url = `/members/uploadProfile/${memberid}`;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await authInstance.post(url, formData);
+      console.log(response.data);
+      console.log("프로필을 추가하였습니다");
+      alert("프로필 사진이 추가/변경되었습니다.");
+      URL.revokeObjectURL(previewUrl);
+      navigate("../");
+    } catch (error) {
+      console.log("프로필 추가 실패", error);
+    }
+  }
 
   // 토큰이 없는경우 보여질 화면
   if (!token) {
@@ -242,8 +315,7 @@ function MypageEdit() {
         }}
         validationSchema={editSchema}
         onSubmit={async (values, { setSubmitting }) => {
-          const url = `http://3.39.150.26:8080/members/${memberid}`;
-          const headers = { Authorization: token };
+          const url = `/members/${memberid}`;
           const body = {
             phone: values.phone,
             name: values.name,
@@ -251,12 +323,10 @@ function MypageEdit() {
           };
 
           try {
-            const response = await axios.patch(url, body, { headers });
+            await authInstance.patch(url, body);
             alert("회원정보가 변경되었습니다.");
-            localStorage.removeItem("token");
-            localStorage.removeItem("ref");
-            localStorage.removeItem("memberid");
             alert("회원정보가 변경되었습니다. 다시 로그인 해 주세요!");
+            window.localStorage.clear();
             navigate("../signin");
           } catch (error) {
             console.error("회원정보 변경 실패:", error);
@@ -275,12 +345,23 @@ function MypageEdit() {
             <Body>
               <Wrapper>
                 <ProfileBox>
-                  <img
-                    src={accountCircle}
-                    style={{ width: "120px", height: "120px" }}
-                  />
+                  <ProfileIMG src={mydata.profile_url || member?.profile_url}>
+                    {mydata.profile_url ? (
+                      <img src={mydata.profile_url} alt="Preview" />
+                    ) : member ? (
+                      <img src={member.profile_url} />
+                    ) : (
+                      <img />
+                    )}
+                    <UploadBox>
+                      <AddProfilebutton
+                        type="file"
+                        accept=".gif,.jpg,.jpeg,.png,.webp"
+                        onChange={(e) => handleAddProfile(e)}
+                      />
+                    </UploadBox>
+                  </ProfileIMG>
                 </ProfileBox>
-
                 <TopItemBox>
                   <Head_Component>
                     <Head_Left>
@@ -302,11 +383,7 @@ function MypageEdit() {
                     />
                   </Input_Component>
                   {touched.name && errors.name ? (
-                    <ErrorMsg
-                      style={{ color: "red", fontSize: "12px", padding: "2px" }}
-                    >
-                      {errors.name}
-                    </ErrorMsg>
+                    <ErrorMsg>{errors.name}</ErrorMsg>
                   ) : null}
                 </TopItemBox>
                 <ItemBox>
@@ -330,11 +407,7 @@ function MypageEdit() {
                     />
                   </Input_Component>
                   {touched.password && errors.password ? (
-                    <ErrorMsg
-                      style={{ color: "red", fontSize: "12px", padding: "2px" }}
-                    >
-                      {errors.password}
-                    </ErrorMsg>
+                    <ErrorMsg>{errors.password}</ErrorMsg>
                   ) : null}
                 </ItemBox>
                 <ItemBox>
@@ -357,11 +430,7 @@ function MypageEdit() {
                     />
                   </Input_Component>
                   {touched.phone && errors.phone ? (
-                    <ErrorMsg
-                      style={{ color: "red", fontSize: "12px", padding: "2px" }}
-                    >
-                      {errors.phone}
-                    </ErrorMsg>
+                    <ErrorMsg>{errors.phone}</ErrorMsg>
                   ) : null}
                 </ItemBox>
               </Wrapper>

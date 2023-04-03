@@ -9,6 +9,9 @@ interface postList {
   contents: string;
   board_id: number;
   created_at: string;
+  member: {
+    profile_url: string;
+  };
 }
 
 export const useGreenPosts = () => {

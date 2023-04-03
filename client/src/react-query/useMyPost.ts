@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
-import { defaultInstance } from "../utils/api";
-
+// import { defaultInstance } from "../utils/api";
+import axios from "axios";
 interface MyPost {
   title: string;
   contents: string;
@@ -18,9 +18,11 @@ export const useMyPost = () => {
   const memberid = localStorage.memberid;
   const fetchPost = async () => {
     const url = `/boards/myBoards/${memberid}`;
-    const response = await defaultInstance.get<MyPost[]>(url);
+    const response = await axios.get<MyPost[]>(url);
     return response.data;
   };
 
-  return useQuery<MyPost[], Error>("MyPost", fetchPost);
+  return useQuery<MyPost[], Error>("MyPost", fetchPost, {
+    refetchOnWindowFocus: false,
+  });
 };

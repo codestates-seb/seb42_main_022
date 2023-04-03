@@ -3,11 +3,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useFeatList } from "../react-query/useFeatList";
 import styled from "styled-components";
 import { useOnePost } from "../react-query/useOnePost";
-import { authInstance } from "../utils/api";
+import { defaultInstance, authInstance } from "../utils/api";
 import dayjs from "dayjs";
 import "dayjs/locale/ko"; // import the locale for Korean language
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { useRecoilState } from "recoil";
+import { mydataState } from "../App";
 import { ReactComponent as DelIcon } from "../icon/delete.svg";
 import { ReactComponent as LikeIcon } from "../icon/thumbup.svg";
 import { ReactComponent as EditIcon } from "../icon/edit.svg";
@@ -34,6 +36,7 @@ interface BoardData {
     };
     member_id: number;
     member_status: string;
+    profile_url: string;
   };
   creator_level: number;
   upload_dto: {
@@ -46,6 +49,26 @@ interface BoardData {
   like_count: number;
   view_count: number;
   created_at: string;
+  modified_at: string;
+}
+
+interface Comments {
+  contents: string;
+  member: {
+    email: string;
+    name: string;
+    phone: string;
+    point: string;
+    tree_count: string;
+    profile_url: string;
+    level_dto: any; // You may want to define an interface for level_dto as well
+    member_id: number;
+    member_status: string;
+  };
+  creator_level: number;
+  comment_id: number;
+  like_count: number;
+  create_at: string;
   modified_at: string;
 }
 
@@ -77,11 +100,10 @@ const Post_wrapper = styled.div`
 const User_container = styled.div`
   display: flex;
   align-items: center;
-  height: 80px;
+  height: 70px;
 `;
 const User_wrapper = styled.div`
   display: flex;
-  margin: 30px;
 `;
 const User_img_wrapper = styled.div`
   display: flex;
@@ -89,19 +111,36 @@ const User_img_wrapper = styled.div`
   align-items: center;
   width: 50px;
   height: 50px;
+  margin-left: 20px;
+`;
+const User_img_wrapper2 = styled(User_img_wrapper)`
+  width: 10%;
+  min-width: 50px;
+  max-width: 50px;
+  margin-left: 0;
+`;
+const UserImgBox = styled.div`
+  width: 48px;
+  height: 48px;
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 `;
 const User_name_wrapper = styled.div`
   display: flex;
   align-items: center;
   margin-left: 10px;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 700;
 `;
 const User_level_wrapper = styled.div`
   display: flex;
   align-items: center;
-  font-size: 15px;
-  margin-left: 10px;
+  font-size: 0.75rem;
+  margin: 5px 0 0 5px;
 `;
 const Content_container = styled.div`
   height: auto;
@@ -128,6 +167,9 @@ const Content_title = styled.div<{ disabled: boolean }>`
       outline: 1px solid #609966;
     }
     ${(props) => !props.disabled && "outline: 2px solid #609966"};
+    :disabled {
+      color: black;
+    }
   }
 `;
 
@@ -177,7 +219,11 @@ const Content_detail = styled.div<{ disabled: boolean }>`
     border-radius: 15px;
     background-color: transparent;
     margin-bottom: 10px;
+    overflow-y: hidden;
     ${(props) => !props.disabled && "outline: 2px solid #609966"};
+    :disabled {
+      color: black;
+    }
   }
 `;
 const Info_container = styled.div`
@@ -290,13 +336,14 @@ const List_wrapper = styled.div``;
 const List = styled.ul``;
 const List_el = styled.li`
   display: flex;
+  justify-content: center;
   align-items: center;
   margin-top: 30px;
 `;
 const LikeBox = styled.div`
   display: flex;
   justify-content: center;
-  width: 20%;
+  width: 10%;
 `;
 const List_like = styled.button`
   display: flex;
@@ -371,10 +418,12 @@ const Input_container = styled.div`
 const Input_wrapper = styled.div`
   display: flex;
   align-items: center;
-  flex-grow: 1;
+  width: 100%;
+  margin: 0 10px 0 20px;
 `;
 const InputBox = styled.div`
-  flex-grow: 8;
+  width: 80%;
+  margin: 0 5px 0 10px;
 `;
 const Comment_Input = styled.input`
   font-size: 1.25rem;
@@ -384,7 +433,10 @@ const Comment_Input = styled.input`
   outline: none;
 `;
 const ButtonBox = styled.div`
-  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  width: 10%;
+  min-width: 50px;
 `;
 const Comment_Button = styled.button`
   height: 30px;
@@ -441,43 +493,20 @@ function Post() {
     isLoading: featLoading,
     isError: featError,
   } = useFeatList();
-
+  const [mydata, setMyData] = useRecoilState(mydataState);
   const [boardData, setBoardData] = useState<BoardData | undefined>(undefined);
   const [title, setTitle] = useState<string | undefined>(undefined);
   const [content, setContent] = useState<string | undefined>(undefined);
+  const [comments, setComments] = useState<Comments[] | undefined>(undefined);
   const [comment, setComment] = useState("");
+  const [like, setLike] = useState<number | undefined>(undefined);
   const [isFixed, setisFixed] = useState<boolean>(false);
   const [clicked, setClicked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const totalSlides = boardData ? boardData.upload_dto.length : null;
   const textarea = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (post) {
-      setBoardData(post);
-      setTitle(post.title);
-      setContent(post.contents);
-    }
-  }, [post]);
-
-  useEffect(() => {
-    // 댓글input 수정시 바로 반영
-    console.log("Comment updated:", comment);
-  }, [comment]);
-
-  useEffect(() => {
-    // Refetch data when id or category changes
-    refetchPost();
-  }, [id, category]);
-
-  if (postLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (postError) {
-    return <div>Error fetching data</div>;
-  }
 
   //! 핸들러
   // 제목 입력 내용 관리
@@ -529,12 +558,19 @@ function Post() {
       ) {
         alert("본인 게시글은 추천할 수 없습니다!");
       } else {
+        setIsSubmitting(true);
         await authInstance.post(url, body);
         console.log("좋아요를 보냈습니다");
+        setIsSubmitting(false);
         window.location.reload();
       }
     } catch (error) {
       console.log("좋아요를 실패했습니다:", error);
+    }
+  }
+  function setLikeClick() {
+    if (like) {
+      setLike(like + 1);
     }
   }
   // 게시글 삭제 관리
@@ -550,11 +586,12 @@ function Post() {
       ) {
         alert("본인 게시글만 삭제 가능합니다!");
       } else {
-        await authInstance.delete(url);
-        console.log("게시글이 삭제되었습니다");
+        setIsSubmitting(true);
+        await defaultInstance.delete(url);
+        // console.log("게시글이 삭제되었습니다");
         alert("게시글이 삭제되었습니다!");
+        setIsSubmitting(false);
         navigate(`../${category}`);
-        window.location.reload();
       }
     } catch (error) {
       console.log("게시글 삭제를 실패했습니다:", error);
@@ -581,9 +618,12 @@ function Post() {
       ) {
         alert("본인 게시글만 수정 가능합니다!");
       } else {
-        const response = await authInstance.patch(url, formData);
+        setIsSubmitting(true);
+        const response = await defaultInstance.patch(url, formData);
+        setIsSubmitting(false);
+        window.location.reload();
         console.log(response.data);
-        console.log("게시글을 수정하였습니다");
+        // console.log("게시글을 수정하였습니다");
       }
     } catch (error) {
       console.log("게시글 수정을 실패하였습니다", error);
@@ -598,23 +638,53 @@ function Post() {
       contents: comment,
     };
     try {
-      const response = await authInstance.post(url, body);
-      console.log("Comment posted:", response.data);
-      window.location.reload();
+      // setIsSubmitting(true);
+      const res = await defaultInstance.post(url, body);
+      // setIsSubmitting(false);
+      // console.log("Comment posted:", response.data);
+      addComment(res.data.data.comment_id);
     } catch (error) {
       console.error("Error posting comment:", error);
     }
   }
+  function addComment(commentid: number) {
+    const data: Comments = {
+      contents: comment,
+      member: mydata,
+      creator_level: mydata.level_dto.level,
+      comment_id: commentid,
+      like_count: 0,
+      create_at: "2023-03-30T02:51:35.724782",
+      modified_at: "2023-03-30T02:51:35.74345",
+    };
+    setComments(() => {
+      if (comments) {
+        return [...comments, data];
+      } else {
+        return [data];
+      }
+    });
+    setComment("");
+  }
+
   // 댓글 삭제 관리
   async function handleDeleteComment(commentid: number) {
     const url = `/comments/${commentid}`;
     try {
+      setIsSubmitting(true);
       const response = await authInstance.delete(url);
-      console.log("댓글이 삭제되었습니다:", response.data);
-      window.location.reload();
+      // console.log("댓글이 삭제되었습니다:", response.data);
+      setIsSubmitting(false);
+      setDeleteComment(commentid);
     } catch (error) {
       console.error("댓글 삭제 실패:", error);
     }
+  }
+  function setDeleteComment(targetid: number) {
+    const filteredComments = comments
+      ? comments.filter((comment) => comment.comment_id !== targetid)
+      : undefined;
+    setComments(filteredComments);
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -645,6 +715,34 @@ function Post() {
     if (title.length > 18) return title.slice(0, 18) + "...";
     return title;
   }
+  useEffect(() => {
+    if (post) {
+      setBoardData(post);
+      setTitle(post.title);
+      setContent(post.contents);
+      setComments(post.comments);
+      setLike(post.like_count);
+    }
+  }, [post]);
+
+  useEffect(() => {
+    // Refetch data when id or category changes
+    refetchPost();
+  }, [id, category]);
+
+  useEffect(() => {
+    // 댓글input 수정시 바로 반영
+    // console.log("Comment updated:", comments);
+  }, [comment, comments]);
+
+  if (postLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (postError) {
+    return <div>Error fetching data</div>;
+  }
+
   return (
     <Container>
       {boardData ? (
@@ -655,7 +753,13 @@ function Post() {
               <User_container>
                 <User_wrapper>
                   <User_img_wrapper>
-                    <UserIcon />
+                    <UserImgBox>
+                      {boardData.member.profile_url ? (
+                        <img src={boardData.member.profile_url} />
+                      ) : (
+                        <UserIcon />
+                      )}
+                    </UserImgBox>
                   </User_img_wrapper>
                   <User_name_wrapper>{boardData.member.name}</User_name_wrapper>
                   <User_level_wrapper>
@@ -752,7 +856,7 @@ function Post() {
               </Info_container>
             </Post_wrapper>
             <CommentCnt>
-              <span>댓글 {boardData.comments.length}</span>
+              <span>댓글 {comments ? comments.length : null}</span>
             </CommentCnt>
 
             {/* 댓글창 부분 */}
@@ -760,9 +864,16 @@ function Post() {
               {/* 댓글입력부분 */}
               <Input_container>
                 <Input_wrapper>
-                  <User_img_wrapper style={{ flexGrow: "1" }}>
-                    <UserIcon />
-                  </User_img_wrapper>
+                  <User_img_wrapper2>
+                    <UserImgBox>
+                      {/*//Todo 내 프로필 사진 띄우게 수정해야함 */}
+                      {/* {boardData.member.profile_url ? (
+                      <img src={boardData.member.profile_url} />
+                      ) : ( */}
+                      <UserIcon />
+                      {/* )} */}
+                    </UserImgBox>
+                  </User_img_wrapper2>
                   <InputBox>
                     <Comment_Input
                       placeholder={
@@ -771,6 +882,7 @@ function Post() {
                           : "로그인이 필요합니다"
                       }
                       type="text"
+                      value={comment}
                       onChange={handleCommentChange}
                       disabled={!localStorage.token}
                     />
@@ -786,37 +898,50 @@ function Post() {
               </Input_container>
               {/* 댓글표시되는 부분 */}
               <Comments_container>
-                {boardData.comments.map((el) => {
-                  return (
-                    <Comments_wrapper key={el.comment_id}>
-                      {/* 유저정보표시 */}
-                      <User_container>
-                        <User_wrapper style={{ margin: "0 0 0 18px" }}>
-                          <User_img_wrapper>
-                            <UserIcon />
-                          </User_img_wrapper>
-                          <User_name_wrapper style={{ fontSize: "1.125rem" }}>
-                            {el.member.name}
-                          </User_name_wrapper>
-                          <User_level_wrapper>
-                            Lv.{el.creator_level}
-                          </User_level_wrapper>
-                        </User_wrapper>
-                        {+localStorage.memberid === +el.member.member_id && (
-                          <DeleteButton
-                            onClick={() => handleDeleteComment(el.comment_id)}
-                          >
-                            <DelIcon fill="#878484" />
-                          </DeleteButton>
-                        )}
-                      </User_container>
-                      {/* 댓글내용 */}
-                      <Comments_contents_wrapper>
-                        <Comments_contents>{el.contents}</Comments_contents>
-                      </Comments_contents_wrapper>
-                    </Comments_wrapper>
-                  );
-                })}
+                {comments
+                  ? comments.map((el, idx) => {
+                      return (
+                        <Comments_wrapper key={idx}>
+                          {/* 유저정보표시 */}
+                          <User_container>
+                            <User_wrapper>
+                              <User_img_wrapper>
+                                <UserImgBox>
+                                  {el.member.profile_url ? (
+                                    <img src={el.member.profile_url} />
+                                  ) : (
+                                    <UserIcon />
+                                  )}
+                                </UserImgBox>
+                              </User_img_wrapper>
+                              <User_name_wrapper
+                                style={{ fontSize: "1.125rem" }}
+                              >
+                                {el.member.name}
+                              </User_name_wrapper>
+                              <User_level_wrapper>
+                                Lv.{el.creator_level}
+                              </User_level_wrapper>
+                            </User_wrapper>
+                            {+localStorage.memberid ===
+                              +el.member.member_id && (
+                              <DeleteButton
+                                onClick={() =>
+                                  handleDeleteComment(el.comment_id)
+                                }
+                              >
+                                <DelIcon fill="#878484" />
+                              </DeleteButton>
+                            )}
+                          </User_container>
+                          {/* 댓글내용 */}
+                          <Comments_contents_wrapper>
+                            <Comments_contents>{el.contents}</Comments_contents>
+                          </Comments_contents_wrapper>
+                        </Comments_wrapper>
+                      );
+                    })
+                  : null}
               </Comments_container>
             </Comment_container>
           </Left_wrapper>
