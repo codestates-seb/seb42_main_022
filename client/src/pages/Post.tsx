@@ -9,7 +9,7 @@ import "dayjs/locale/ko"; // import the locale for Korean language
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { useRecoilState } from "recoil";
-import { counterState } from "../App";
+import { mydataState } from "../App";
 import { ReactComponent as DelIcon } from "../icon/delete.svg";
 import { ReactComponent as LikeIcon } from "../icon/thumbup.svg";
 import { ReactComponent as EditIcon } from "../icon/edit.svg";
@@ -493,12 +493,13 @@ function Post() {
     isLoading: featLoading,
     isError: featError,
   } = useFeatList();
-  const [mydata, setMyData] = useRecoilState(counterState);
+  const [mydata, setMyData] = useRecoilState(mydataState);
   const [boardData, setBoardData] = useState<BoardData | undefined>(undefined);
   const [title, setTitle] = useState<string | undefined>(undefined);
   const [content, setContent] = useState<string | undefined>(undefined);
   const [comments, setComments] = useState<Comments[] | undefined>(undefined);
   const [comment, setComment] = useState("");
+  const [like, setLike] = useState<number | undefined>(undefined);
   const [isFixed, setisFixed] = useState<boolean>(false);
   const [clicked, setClicked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -567,6 +568,11 @@ function Post() {
       console.log("좋아요를 실패했습니다:", error);
     }
   }
+  function setLikeClick() {
+    if (like) {
+      setLike(like + 1);
+    }
+  }
   // 게시글 삭제 관리
   async function handleDeleteClick() {
     const url = `/boards/${id}`;
@@ -586,7 +592,6 @@ function Post() {
         alert("게시글이 삭제되었습니다!");
         setIsSubmitting(false);
         navigate(`../${category}`);
-        window.location.reload();
       }
     } catch (error) {
       console.log("게시글 삭제를 실패했습니다:", error);
@@ -633,11 +638,10 @@ function Post() {
       contents: comment,
     };
     try {
-      setIsSubmitting(true);
+      // setIsSubmitting(true);
       const res = await defaultInstance.post(url, body);
-      setIsSubmitting(false);
+      // setIsSubmitting(false);
       // console.log("Comment posted:", response.data);
-      setClicked(!clicked);
       addComment(res.data.data.comment_id);
     } catch (error) {
       console.error("Error posting comment:", error);
@@ -717,6 +721,7 @@ function Post() {
       setTitle(post.title);
       setContent(post.contents);
       setComments(post.comments);
+      setLike(post.like_count);
     }
   }, [post]);
 

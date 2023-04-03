@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useRecoilState } from "recoil";
 import { areaState, memberInfoAtom } from "../recoil/state";
+import { mydataState } from "../App";
 import apiFetch from "../utils/useFetch";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -17,8 +18,8 @@ import saving from "../icon/savings.svg";
 import nature from "../icon/nature.svg";
 import more from "../icon/expand_more.svg";
 import less from "../icon/expand_less.svg";
-import InfoModal from "../components/InfoModal"
-import ScrollToTop from '../components/ScrollToTop';
+import InfoModal from "../components/InfoModal";
+import ScrollToTop from "../components/ScrollToTop";
 dayjs.extend(relativeTime);
 dayjs.locale("ko");
 
@@ -119,7 +120,7 @@ const PostButton = styled.button`
   text-align: start;
   transition: background-color 0.3s ease;
   cursor: pointer;
-  &:hover{  
+  &:hover {
     background-color: #bdbdbd;
     color: #ebebeb;
   }
@@ -319,11 +320,11 @@ const MileageButton = styled.button`
   align-items: center;
   transition: background-color 0.3s ease;
   cursor: pointer;
-  &:hover{  
-    background-color: #4F8255;
+  &:hover {
+    background-color: #4f8255;
   }
-  &:active{  
-    border: 5px solid #66A16D;
+  &:active {
+    border: 5px solid #66a16d;
   }
   @media screen and (max-width: 1000px) {
     font-size: 10px;
@@ -580,12 +581,13 @@ const InfoButton = styled.button`
   cursor: pointer;
   transition: background-color 0.3s ease;
   &:hover {
-    background-color: #4F8255;
+    background-color: #4f8255;
   }
 `;
 
 function GreenAct() {
   // const [itemvalue, setItemvalue] = useRecoilState(areaState); // 지역 상태 (서울, 부산 등)
+  const [mydata, setMyData] = useRecoilState(mydataState);
   const [memberinfo, setMemberInfo] = useRecoilState(memberInfoAtom); // 멤버 정보(Post 모달에서 활용)
   // const { data, loading, error } = apiFetch(
   //   `https://api.waqi.info/v2/feed/${itemvalue}/?token=a85f9e4ea2f2e1efa4cecb4806a6909e520368df`,
@@ -720,7 +722,7 @@ function GreenAct() {
         headers: { Authorization: token, Refresh: ref },
       })
       .catch((error) => console.log(error));
-  }
+  };
   const membersearch = () => {
     axios
       .get(`http://3.39.150.26:8080/members/${memberid}`, {
@@ -729,7 +731,7 @@ function GreenAct() {
       .then((response) => {
         const { data } = response;
         localStorage.setItem("point", data.point);
-        setMilageState(localStorage.point)
+        setMilageState(localStorage.point);
       })
       .catch(() => console.log("로그인 해라"));
   };
@@ -832,8 +834,8 @@ function GreenAct() {
         <SectionContainer>
           <Posting>
             <UserImgBox>
-              {token && memberinfo && memberinfo.profile_url ? (
-                <Usericon src={memberinfo.profile_url} alt="user" />
+              {token && mydata && mydata.profile_url ? (
+                <Usericon src={mydata.profile_url} alt="user" />
               ) : (
                 <Usericon src={user} alt="user" />
               )}
@@ -1025,10 +1027,7 @@ function GreenAct() {
         {pointlack && <Toast>마일리지가 부족합니다.</Toast>}
       </MainContainer>
       <InfoButton onClick={infoOpenhandle}>P</InfoButton>
-      {infoToggle && (
-        <InfoModal
-        onClose={infoOpenhandle}/>
-      )}
+      {infoToggle && <InfoModal onClose={infoOpenhandle} />}
       <ScrollToTop />
     </>
   );

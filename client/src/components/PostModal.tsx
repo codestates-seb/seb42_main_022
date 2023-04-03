@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import { memberInfoAtom } from "../recoil/state";
+import { mydataState } from "../App";
 import Add from "../icon/add_circle.svg";
 import Cancel from "../icon/cancel.svg";
 import user from "../icon/user.svg";
@@ -158,6 +159,7 @@ interface modal {
   onConfirm: any;
 }
 function PostModal({ onClose, onConfirm }: modal) {
+  const [mydata, setMyData] = useRecoilState(mydataState);
   const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
   const [imageFile, setImageFile] = useState<File[]>([]);
   const [title, setTitle] = useState("");
@@ -246,7 +248,7 @@ function PostModal({ onClose, onConfirm }: modal) {
             <UserImgBox>
               {memberinfo &&
                 (memberinfo.profile_url ? (
-                  <Usericon src={memberinfo.profile_url} alt="user" />
+                  <Usericon src={mydata.profile_url} alt="user" />
                 ) : (
                   <Usericon src={user} alt="user" />
                 ))}
@@ -254,7 +256,7 @@ function PostModal({ onClose, onConfirm }: modal) {
             <UserInfo>
               {memberinfo && (
                 <UserText style={{ padding: "5px 0px 0px 0px" }}>
-                  <b>{memberinfo.name}</b>&nbsp;Lv.{memberinfo.level_dto.level}
+                  <b>{memberinfo.name}</b>&nbsp;Lv.{mydata.level_dto.level}
                 </UserText>
               )}
               <UserText>{currentTime}</UserText>
