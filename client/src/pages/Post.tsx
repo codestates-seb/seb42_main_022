@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useFeatList } from "../react-query/useFeatList";
 import styled from "styled-components";
 import { useOnePost } from "../react-query/useOnePost";
-import { defaultInstance } from "../utils/api";
+import { defaultInstance, authInstance } from "../utils/api";
 import dayjs from "dayjs";
 import "dayjs/locale/ko"; // import the locale for Korean language
 import utc from "dayjs/plugin/utc";
@@ -490,7 +490,7 @@ function Post() {
       setTitle(post.title);
       setContent(post.contents);
     }
-  }, [post]);
+  }, [post, clicked]);
 
   useEffect(() => {
     // 댓글input 수정시 바로 반영
@@ -561,8 +561,8 @@ function Post() {
         alert("본인 게시글은 추천할 수 없습니다!");
       } else {
         setIsSubmitting(true);
-        await defaultInstance.post(url, body);
-        // console.log("좋아요를 보냈습니다");
+        await authInstance.post(url, body);
+        console.log("좋아요를 보냈습니다");
         setIsSubmitting(false);
         window.location.reload();
       }
@@ -640,6 +640,7 @@ function Post() {
       const response = await defaultInstance.post(url, body);
       setIsSubmitting(false);
       // console.log("Comment posted:", response.data);
+      setClicked(!clicked);
       window.location.reload();
     } catch (error) {
       console.error("Error posting comment:", error);

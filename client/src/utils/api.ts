@@ -11,10 +11,10 @@ const axiosApi = (url: string) => {
 
 // 토큰 인증 요청
 const axiosAuthApi = (url: string) => {
-  const token = localtoken;
+  const token = localStorage.token;
   const instance = axios.create({
     baseURL: url,
-    headers: { Authorization: "Bearer " + token },
+    headers: { Authorization: token },
   });
   return instance;
 };
