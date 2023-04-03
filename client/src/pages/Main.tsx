@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import Carousel from "../components/Carousel";
 import ShortcutCard from "../components/ShortcutCard";
 import { useRecoilState } from "recoil";
-import { counterState } from "../App";
+import { mydataState } from "../App";
 import { authInstance } from "../utils/api";
 
 const Container = styled.div`
@@ -28,7 +28,7 @@ const MiddleText = styled.div`
 `;
 
 const Main = () => {
-  const [data, setData] = useRecoilState(counterState);
+  const [data, setData] = useRecoilState(mydataState);
 
   async function getUserinfo() {
     const id = localStorage.memberid;

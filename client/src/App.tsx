@@ -24,7 +24,7 @@ import { recoilPersist } from "recoil-persist";
 
 const { persistAtom } = recoilPersist();
 
-export const counterState = atom({
+export const mydataState = atom({
   key: "memberdata",
   default: 0,
   effects_UNSTABLE: [persistAtom],
@@ -32,7 +32,7 @@ export const counterState = atom({
 
 function App() {
   // const { authenticated } = useRecoilValue(sessionState);
-  const [data, setData] = useRecoilState(counterState);
+  const [data, setData] = useRecoilState(mydataState);
   const token = localStorage.token;
   useCheckAuth();
   return (

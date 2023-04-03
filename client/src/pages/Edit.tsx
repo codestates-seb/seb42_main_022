@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { object, string, ref } from "yup";
 import { authInstance } from "../utils/api";
 import styled from "styled-components";
+import { useRecoilState } from "recoil";
+import { mydataState } from "../App";
 import { Formik } from "formik";
 import { useMemberInfo } from "../react-query/useMemberInfo";
 import addcircle from "../icon/add_circle.svg";
@@ -210,7 +212,7 @@ function MypageEdit() {
     isLoading: memberLoading,
     isError: memberError,
   } = useMemberInfo();
-  console.log(userdata);
+  const [mydata, setMyData] = useRecoilState(mydataState);
   const token = localStorage.token;
   const memberid = localStorage.memberid;
   const navigate = useNavigate();
@@ -290,7 +292,9 @@ function MypageEdit() {
       const response = await authInstance.post(url, formData);
       console.log(response.data);
       console.log("프로필을 추가하였습니다");
+      alert("프로필 사진이 추가/변경되었습니다.");
       URL.revokeObjectURL(previewUrl);
+      navigate("../");
     } catch (error) {
       console.log("프로필 추가 실패", error);
     }
@@ -341,15 +345,14 @@ function MypageEdit() {
             <Body>
               <Wrapper>
                 <ProfileBox>
-                  <ProfileIMG src={previewUrl || member?.profile_url}>
-                    {previewUrl ? (
-                      <img src={previewUrl} alt="Preview" />
+                  <ProfileIMG src={mydata.profile_url || member?.profile_url}>
+                    {mydata.profile_url ? (
+                      <img src={mydata.profile_url} alt="Preview" />
                     ) : member ? (
                       <img src={member.profile_url} />
                     ) : (
                       <img />
                     )}
-
                     <UploadBox>
                       <AddProfilebutton
                         type="file"
