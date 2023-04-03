@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const localtoken = localStorage.token;
+
 const BASE_URL = "http://3.39.150.26:8080";
 
 // 기본 헤더없는 요청

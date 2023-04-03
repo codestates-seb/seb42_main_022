@@ -34,6 +34,7 @@ function App() {
   // const { authenticated } = useRecoilValue(sessionState);
   const [data, setData] = useRecoilState(mydataState);
   const token = localStorage.token;
+  console.log(token);
   useCheckAuth();
   return (
     <Fragment>

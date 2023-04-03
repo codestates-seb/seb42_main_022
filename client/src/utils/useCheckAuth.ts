@@ -38,7 +38,7 @@ function useCheckAuth() {
         localStorage.setItem("token", token);
         localStorage.setItem("expiretime", expire.toISOString());
         localStorage.setItem("refresh", refresh);
-        console.log("세션있음", session);
+        // console.log("세션있음", session);
       })
       .catch((error) => {
         console.log(error);
