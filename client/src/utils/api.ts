@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const localtoken = localStorage.token;
+// const localtoken = localStorage.token;
 
 export const fetchCreate = (url: string, data: string) => {
   fetch(url, {
@@ -46,10 +46,10 @@ const axiosApi = (url: string) => {
 };
 // 토큰 인증 요청
 const axiosAuthApi = (url: string) => {
-  const token = localtoken;
+  // const token = localtoken;
   const instance = axios.create({
     baseURL: url,
-    headers: { Authorization: "Bearer " + token },
+    // headers: { Authorization: "Bearer " + token },
   });
   return instance;
 };
