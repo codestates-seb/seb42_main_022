@@ -7,7 +7,7 @@ import GreenAct from "./pages/GreenAct";
 import News from "./pages/News";
 import GreenCal from "./pages/GreenCal";
 import Ranking from "./pages/Ranking";
-import { RecoilRoot, useRecoilValue } from "recoil";
+import { RecoilRoot, useRecoilValue, useRecoilState, atom } from "recoil";
 import Post from "./pages/Post";
 import MyPage from "./pages/MyPage";
 import Edit from "./pages/Edit";
@@ -20,9 +20,19 @@ import GreenCalResult from "./pages/GreenCalResult";
 import Protected from "./components/privateRoute";
 import { sessionState } from "./recoil/state";
 import useCheckAuth from "./utils/useCheckAuth";
+import { recoilPersist } from "recoil-persist";
+
+const { persistAtom } = recoilPersist();
+
+export const counterState = atom({
+  key: "memberdata",
+  default: 0,
+  effects_UNSTABLE: [persistAtom],
+});
 
 function App() {
   // const { authenticated } = useRecoilValue(sessionState);
+  const [data, setData] = useRecoilState(counterState);
   const token = localStorage.token;
   useCheckAuth();
   return (
